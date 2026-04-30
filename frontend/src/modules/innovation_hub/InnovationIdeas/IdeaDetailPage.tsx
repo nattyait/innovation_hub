@@ -16,7 +16,7 @@ const EMPTY_APPLY = {
 export function IdeaDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { user, isManager } = useAuth()
+  const { user } = useAuth()
 
   const [idea, setIdea] = useState<Idea | null>(null)
   const [comments, setComments] = useState<IdeaComment[]>([])
@@ -52,13 +52,20 @@ export function IdeaDetailPage() {
 
   if (!idea) return <div className="p-8 text-center text-[var(--color-text-secondary)]">กำลังโหลด...</div>
 
-  const isAuthor    = user?.id === idea.author.id
-  const isApprover  = isManager && idea.approver?.id === user?.id
+  const isAuthor      = user?.id === idea.author.id
+  const isManagerRole = user?.role === 'manager'
+  const isSponsorRole = user?.role === 'sponsor'
+  const isPending     = ['submitted', 'under_review'].includes(idea.status)
   const canHeart    = idea.status === 'approved' && (idea.hearted || remainingHearts > 0)
   const canEdit     = isAuthor && ['draft', 'submitted', 'returned'].includes(idea.status)
   const canSubmit   = isAuthor && ['draft', 'returned'].includes(idea.status)
   const canRetract  = isAuthor && idea.status === 'submitted'
-  const canApprove  = isApprover && ['submitted', 'under_review'].includes(idea.status)
+  // Manager: only approves ideas routed to them via org chart
+  // Sponsor: approves any pending idea cross-department
+  const canApprove  = isPending && (
+    (isManagerRole && idea.approver?.id === user?.id) ||
+    isSponsorRole
+  )
   const canCreateProject = user?.role === 'sponsor' && idea.status === 'approved'
 
   const handleCreateProject = async () => {

@@ -73,7 +73,7 @@ created_ideas = ideas_data.map do |attrs|
     i.status   = attrs[:status]
     i.tags     = attrs[:tags]
     i.author   = attrs[:author]
-    i.approver = manager if %w[approved under_review returned].include?(attrs[:status])
+    i.approver = manager if %w[approved under_review returned submitted].include?(attrs[:status])
   end
   attrs[:communities].each { |c| idea.idea_community_tags.find_or_create_by!(community: c) }
   idea
