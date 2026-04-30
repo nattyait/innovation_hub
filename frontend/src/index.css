@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary:        #1B74E4;
+  --color-primary-hover:  #1565C0;
+  --color-bg-body:        #EBF7FF;
+  --color-bg-surface:     #FFFFFF;
+  --color-bg-badge:       #E8F0FB;
+  --color-bg-disabled:    #F0F0F0;
+  --color-text-primary:   #1A2038;
+  --color-text-secondary: #8A96A8;
+  --color-text-disabled:  #BDBDBD;
+  --color-heart:          #FF4D6D;
+  --color-heart-empty:    #C7C7CC;
+  --color-coin:           #F5A623;
+  --color-border:         #E8EDF5;
+  --color-border-input:   #D1D9E6;
+  --color-border-dashed:  #A8C4E8;
+  --radius-card:          16px;
+  --radius-button:        24px;
+  --radius-tab:           20px;
+  --radius-input:         12px;
+  --font-sans:            'Prompt', sans-serif;
+}
+
+@layer base {
+  html { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  body { margin: 0; background-color: var(--color-bg-body); color: var(--color-text-primary); }
+  #root { min-height: 100dvh; }
+}
+
+@layer utilities {
+  .gradient-header {
+    background: linear-gradient(180deg, #5BC8F5 0%, #2BA5E0 60%, #EBF7FF 100%);
+  }
+  .shadow-card { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .shadow-btn  { box-shadow: 0 4px 12px rgba(27,116,228,0.25); }
+  .shadow-fab  { box-shadow: 0 4px 16px rgba(27,116,228,0.35); }
+}
