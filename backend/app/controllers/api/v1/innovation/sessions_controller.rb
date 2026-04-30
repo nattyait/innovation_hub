@@ -2,7 +2,6 @@ module Api
   module V1
     module Innovation
       class SessionsController < ApplicationController
-        # POC: persona-based login without SSO
         def create
           user = User.find_by(email: params[:email])
           if user&.authenticate(params[:password])
@@ -14,13 +13,12 @@ module Api
           end
         end
 
-        # POC shortcut: login as a pre-seeded persona
         def persona
           persona_map = {
-            "employee"      => "employee@ktb.poc",
-            "admin"         => "admin@ktb.poc",
-            "sponsor"       => "sponsor@ktb.poc",
-            "project_owner" => "project_owner@ktb.poc"
+            "employee" => "employee@ktb.poc",
+            "manager"  => "manager@ktb.poc",
+            "admin"    => "admin@ktb.poc",
+            "sponsor"  => "sponsor@ktb.poc"
           }
           email = persona_map[params[:persona]]
           return render json: { error: "Unknown persona" }, status: :unprocessable_entity unless email
@@ -42,7 +40,8 @@ module Api
           {
             id: user.id, name: user.name, email: user.email,
             role: user.role, avatar_url: user.avatar_url,
-            remaining_hearts: user.remaining_hearts
+            remaining_hearts: user.remaining_hearts,
+            total_points: user.total_points
           }
         end
       end

@@ -32,14 +32,19 @@ module Api
           end
 
           def admin_idea_params
-            params.require(:idea).permit(:title, :body, :category, :status, tags: [])
+            params.require(:idea).permit(:title, :body, :category, :status, :return_reason, tags: [])
           end
 
           def admin_serialize(idea)
-            { id: idea.id, title: idea.title, status: idea.status, category: idea.category,
-              heart_count: idea.heart_count, tags: idea.tags,
+            {
+              id: idea.id, title: idea.title, status: idea.status, category: idea.category,
+              heart_count: idea.heart_count, application_count: idea.application_count,
+              tags: idea.tags,
               author: { id: idea.author_id, name: idea.author.name },
-              created_at: idea.created_at }
+              approver: idea.approver ? { id: idea.approver_id, name: idea.approver.name } : nil,
+              return_reason: idea.return_reason,
+              created_at: idea.created_at
+            }
           end
         end
       end

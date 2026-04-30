@@ -4,38 +4,46 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       namespace :innovation do
-        # Auth (POC)
         post "sessions",         to: "sessions#create"
         post "sessions/persona", to: "sessions#persona"
 
-        # Public summary (for One Krungthai home feed)
-        get "summary",                 to: "summary#index"
-        get "summary/trending_ideas",  to: "summary#trending_ideas"
-        get "summary/active_projects", to: "summary#active_projects"
+        get "summary",                to: "summary#index"
+        get "summary/trending_ideas", to: "summary#trending_ideas"
+        get "summary/leaderboard",    to: "summary#top_leaderboard"
 
-        # Ideas
         resources :ideas, only: [:index, :show, :create, :update, :destroy] do
-          member { patch :change_status }
-          resources :hearts,   only: [:create, :destroy], shallow: true
-          resources :comments, only: [:index, :create, :destroy], shallow: true
+          collection { get :pending_approvals }
+          member do
+            patch :submit
+            patch :retract
+            patch :approve
+            patch :decline
+            patch :return_idea, path: :return
+          end
+          resources :hearts,       only: [:create]
+          resources :comments,     only: [:index, :create]
+          resources :applications, only: [:index, :create], controller: :idea_applications
         end
 
-        # Incubator Projects
-        resources :incubator_projects, only: [:index, :show, :update] do
-          member { patch :change_status }
-          resources :project_updates,     only: [:index, :create], shallow: true
-          resources :project_discussions, only: [:index, :create, :destroy], shallow: true
+        delete "hearts/:id",          to: "hearts#destroy",            as: :heart
+        delete "comments/:id",        to: "comments#destroy",          as: :comment
+        post   "comments/:id/upvote", to: "comments#upvote",           as: :comment_upvote
+        delete "comments/:id/upvote", to: "comments#remove_upvote"
+
+        resources :idea_applications, only: [] do
+          resource :impact, only: [:create, :update], controller: :idea_impacts
         end
 
-        # Classroom
-        resources :classroom_courses, only: [:index, :show]
+        resources :communities, only: [:index] do
+          member { get :ideas }
+        end
 
-        # Notifications
+        get  "leaderboard", to: "leaderboard#index"
+
         resources :notifications, only: [:index] do
           collection { patch :mark_read }
         end
 
-        # Admin
         namespace :admin do
           resources :ideas, only: [:index, :update, :destroy]
           post  "heart_budgets/open_period", to: "heart_budgets#open_period"

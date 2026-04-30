@@ -2,10 +2,9 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from './shared/hooks/useAuth'
 
 const PERSONAS = [
-  { key: 'employee'      as const, label: 'พนักงาน',         icon: '👤', desc: 'เสนอไอเดีย • ให้หัวใจ' },
-  { key: 'admin'         as const, label: 'แอดมิน',          icon: '🛡️', desc: 'Moderate • อนุมัติไอเดีย' },
-  { key: 'sponsor'       as const, label: 'Sponsor/หัวหน้า', icon: '💼', desc: 'ดูข้อมูล • พิจารณา Sponsor' },
-  { key: 'project_owner' as const, label: 'Project Owner',   icon: '🚀', desc: 'อัปเดตโปรเจค Incubator' },
+  { key: 'employee' as const, label: 'พนักงาน',   icon: '👤', desc: 'เสนอไอเดีย • ให้หัวใจ • รายงาน impact' },
+  { key: 'manager'  as const, label: 'ผู้จัดการ', icon: '👔', desc: 'อนุมัติ / ส่งคืนไอเดียของทีม' },
+  { key: 'sponsor'  as const, label: 'Sponsor',   icon: '💼', desc: 'อนุมัติข้าม department' },
 ]
 
 export function LoginPage() {

@@ -8,7 +8,7 @@ export function useAuth() {
     return stored ? JSON.parse(stored) : null
   })
 
-  const loginAsPersona = useCallback(async (persona: 'employee' | 'admin' | 'sponsor' | 'project_owner') => {
+  const loginAsPersona = useCallback(async (persona: 'employee' | 'manager' | 'admin' | 'sponsor') => {
     const { data } = await authApi.persona(persona)
     localStorage.setItem('ih_token', data.token)
     localStorage.setItem('ih_user', JSON.stringify(data.user))
@@ -22,5 +22,11 @@ export function useAuth() {
     setUser(null)
   }, [])
 
-  return { user, loginAsPersona, logout, isAdmin: user?.role === 'admin' }
+  return {
+    user,
+    loginAsPersona,
+    logout,
+    isAdmin:   user?.role === 'admin',
+    isManager: user?.role === 'manager' || user?.role === 'sponsor',
+  }
 }

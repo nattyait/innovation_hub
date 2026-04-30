@@ -1,4 +1,4 @@
-export type Role = 'employee' | 'admin' | 'sponsor' | 'project_owner'
+export type Role = 'employee' | 'manager' | 'admin' | 'sponsor'
 
 export interface User {
   id: number
@@ -7,10 +7,28 @@ export interface User {
   role: Role
   avatar_url: string | null
   remaining_hearts: number
+  total_points: number
 }
 
-export type IdeaStatus = 'draft' | 'pending_review' | 'approved' | 'declined' | 'incubating'
+export type IdeaStatus = 'draft' | 'submitted' | 'under_review' | 'approved' | 'declined' | 'returned'
 export type IdeaCategory = 'product' | 'process' | 'technology' | 'culture' | 'customer' | 'other'
+export type ImpactType = 'time' | 'cost' | 'people' | 'process' | 'other'
+export type BadgeKey =
+  | 'first_idea' | 'approved_innovator' | 'trendsetter' | 'serial_innovator'
+  | 'impact_maker' | 'adoption_driver' | 'community_builder' | 'top_contributor'
+export type LeaderboardCategory =
+  | 'top_innovator' | 'impact_champion' | 'community_catalyst'
+  | 'idea_adopter' | 'rising_star'
+export type LeaderboardPeriod = 'month' | 'quarter' | 'all'
+
+export interface Community {
+  id: number
+  external_id: string
+  name: string
+  description: string | null
+  member_count: number
+  avatar_url: string | null
+}
 
 export interface Idea {
   id: number
@@ -22,68 +40,63 @@ export interface Idea {
   heart_count: number
   hearted: boolean
   heart_id: number | null
+  comment_count: number
+  application_count: number
+  return_reason?: string | null
   author: { id: number; name: string; avatar_url: string | null }
-  created_at: string
-  incubator_project?: IncubatorProjectSummary | null
-}
-
-export interface IncubatorProjectSummary {
-  id: number
-  title: string
-  status: ProjectStatus
-  summary: string | null
-  jira_board_url: string | null
-  jira_project_key: string | null
-  member_count: number
-  is_member: boolean
-  owner: { id: number; name: string; avatar_url: string | null } | null
-}
-
-export type ProjectStatus = 'discovery' | 'mvp' | 'pilot' | 'scaling' | 'completed' | 'on_hold'
-export type MilestoneTag = 'general' | 'milestone' | 'blocker' | 'achievement'
-
-export interface IncubatorProject {
-  id: number
-  title: string
-  status: ProjectStatus
-  summary?: string
-  member_count: number
-  owner: { id: number; name: string; avatar_url: string | null } | null
-  idea: { id: number; title: string } | null
-  jira_board_url?: string
-  jira?: { open_issues: number | null; current_sprint: string | null }
-  members?: { id: number; name: string; avatar_url: string | null }[]
+  approver?: { id: number; name: string } | null
+  communities: Pick<Community, 'id' | 'name'>[]
   created_at: string
 }
 
-export interface ProjectUpdate {
+export interface IdeaComment {
   id: number
   body: string
-  milestone_tag: MilestoneTag | null
+  upvote_count: number
+  upvoted: boolean
   user: { id: number; name: string; avatar_url: string | null }
   created_at: string
 }
 
-export interface ProjectDiscussion {
+export interface IdeaApplication {
   id: number
-  body: string
-  user: { id: number; name: string; avatar_url: string | null }
-  created_at: string
-}
-
-export interface ClassroomCourse {
-  id: number
-  title: string
+  idea_id: number
+  department: string | null
   description: string
-  thumbnail_url: string | null
-  deep_link_url: string
-  category: string
-  duration_minutes: number
+  applied_by: { id: number; name: string; avatar_url: string | null }
+  impact?: IdeaImpact | null
+  created_at: string
+}
+
+export interface IdeaImpact {
+  id: number
+  people_affected: number
+  time_saved_hours: number | null
+  cost_saved_thb: number | null
+  impact_type: ImpactType
+  description: string
+  evidence_url: string | null
+  reported_by: { id: number; name: string; avatar_url: string | null }
+  created_at: string
+}
+
+export interface UserBadge {
+  badge_key: BadgeKey
+  earned_at: string
+}
+
+export interface LeaderboardEntry {
+  rank: number
+  user: { id: number; name: string; avatar_url: string | null }
+  score: number
+  badges: BadgeKey[]
 }
 
 export interface Notification {
   id: number
-  kind: 'idea_approved' | 'idea_incubating'
+  kind:
+    | 'idea_approved' | 'idea_declined' | 'idea_returned'
+    | 'idea_applied'  | 'idea_impacted' | 'idea_pending_approval'
   read: boolean
   notifiable_type: string
   notifiable_id: number

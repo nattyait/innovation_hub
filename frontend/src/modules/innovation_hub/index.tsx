@@ -4,9 +4,8 @@ import { BottomNav } from './BottomNav'
 import { IdeaListPage } from './InnovationIdeas/IdeaListPage'
 import { IdeaDetailPage } from './InnovationIdeas/IdeaDetailPage'
 import { IdeaFormPage } from './InnovationIdeas/IdeaFormPage'
-import { ClassroomPage } from './InnovationClassroom/ClassroomPage'
-import { ProjectListPage } from './IncubatorProjects/ProjectListPage'
-import { ProjectDetailPage } from './IncubatorProjects/ProjectDetailPage'
+import { CommunityPage } from './Community/CommunityPage'
+import { LeaderboardPage } from './Leaderboard/LeaderboardPage'
 import { AdminIdeasPage } from './Admin/AdminIdeasPage'
 import { useAuth } from './shared/hooks/useAuth'
 
@@ -36,14 +35,13 @@ export function InnovationHubModule() {
             <Layout>
               <Routes>
                 <Route index element={<Navigate to="ideas" replace />} />
-                <Route path="ideas"         element={<IdeaListPage />} />
+                <Route path="ideas"          element={<IdeaListPage />} />
                 <Route path="ideas/new"      element={<IdeaFormPage />} />
-                <Route path="ideas/:id"     element={<IdeaDetailPage />} />
+                <Route path="ideas/:id"      element={<IdeaDetailPage />} />
                 <Route path="ideas/:id/edit" element={<IdeaFormPage />} />
-                <Route path="classroom"     element={<ClassroomPage />} />
-                <Route path="projects"      element={<ProjectListPage />} />
-                <Route path="projects/:id"  element={<ProjectDetailPage />} />
-                <Route path="admin"         element={<AdminIdeasPage />} />
+                <Route path="community"      element={<CommunityPage />} />
+                <Route path="leaderboard"    element={<LeaderboardPage />} />
+                <Route path="admin"          element={<AdminIdeasPage />} />
               </Routes>
             </Layout>
           </AuthGuard>

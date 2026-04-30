@@ -7,7 +7,7 @@ import { ideasApi } from '../shared/api'
 interface Props {
   idea: Idea
   remainingHearts?: number
-  onHeartToggle?: (idea: Idea, newCount: number, newRemaining: number, newHeartId: number | null) => void
+  onHeartToggle?: (id: number, heart_count: number, hearted: boolean, heart_id: number | null, remaining_hearts: number) => void
 }
 
 export function IdeaCard({ idea, remainingHearts = 0, onHeartToggle }: Props) {
@@ -17,14 +17,12 @@ export function IdeaCard({ idea, remainingHearts = 0, onHeartToggle }: Props) {
     try {
       if (idea.hearted && idea.heart_id) {
         const { data } = await ideasApi.removeHeart(idea.heart_id)
-        onHeartToggle?.(idea, data.heart_count, data.remaining_hearts, null)
+        onHeartToggle?.(idea.id, data.heart_count, false, null, data.remaining_hearts)
       } else if (!idea.hearted && remainingHearts > 0) {
         const { data } = await ideasApi.giveHeart(idea.id)
-        onHeartToggle?.(idea, data.heart_count, data.remaining_hearts, data.heart_id)
+        onHeartToggle?.(idea.id, data.heart_count, true, data.heart_id, data.remaining_hearts)
       }
-    } catch {
-      // handled by interceptor
-    }
+    } catch { /* handled by interceptor */ }
   }
 
   const canHeart = idea.hearted || remainingHearts > 0
@@ -38,33 +36,30 @@ export function IdeaCard({ idea, remainingHearts = 0, onHeartToggle }: Props) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5">
             <IdeaStatusBadge status={idea.status} />
-            {idea.category && (
-              <span className="text-xs text-[var(--color-text-secondary)]">{idea.category}</span>
-            )}
+            {idea.category && <span className="text-xs text-[var(--color-text-secondary)]">{idea.category}</span>}
           </div>
           <h3 className="font-semibold text-base leading-snug line-clamp-2">{idea.title}</h3>
-          <div className="flex items-center gap-1.5 mt-2">
-            <div className="w-5 h-5 rounded-full bg-[var(--color-bg-badge)] flex items-center justify-center text-xs">
-              {idea.author.name[0]}
+          <div className="flex items-center gap-3 mt-2">
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-[var(--color-bg-badge)] flex items-center justify-center text-xs">{idea.author.name[0]}</div>
+              <span className="text-xs text-[var(--color-text-secondary)]">{idea.author.name}</span>
             </div>
-            <span className="text-xs text-[var(--color-text-secondary)]">{idea.author.name}</span>
+            {idea.application_count > 0 && (
+              <span className="text-xs text-green-600">🚀 {idea.application_count}</span>
+            )}
+            {idea.communities.length > 0 && (
+              <span className="text-xs text-[var(--color-text-secondary)] truncate">{idea.communities[0].name}</span>
+            )}
           </div>
         </div>
         {idea.status === 'approved' && (
-          <HeartButton
-            hearted={idea.hearted}
-            count={idea.heart_count}
-            onClick={handleHeart}
-            disabled={!canHeart}
-          />
+          <HeartButton hearted={idea.hearted} count={idea.heart_count} onClick={handleHeart} disabled={!canHeart} />
         )}
       </div>
       {idea.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-3">
           {idea.tags.map((tag) => (
-            <span key={tag} className="bg-[var(--color-bg-badge)] text-[var(--color-primary)] text-xs px-2 py-0.5 rounded-full">
-              #{tag}
-            </span>
+            <span key={tag} className="bg-[var(--color-bg-badge)] text-[var(--color-primary)] text-xs px-2 py-0.5 rounded-full">#{tag}</span>
           ))}
         </div>
       )}

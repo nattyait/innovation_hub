@@ -7,6 +7,7 @@ module Api
           heart = idea.idea_hearts.build(user: current_user, comment: params[:comment])
           authorize heart
           if heart.save
+            PointsService.award(idea.author, :heart_received, reference: idea) unless idea.author_id == current_user.id
             render json: {
               heart_id: heart.id,
               heart_count: idea.reload.heart_count,
@@ -17,7 +18,6 @@ module Api
           end
         end
 
-        # Shallow route: DELETE /hearts/:id
         def destroy
           heart = IdeaHeart.find(params[:id])
           authorize heart

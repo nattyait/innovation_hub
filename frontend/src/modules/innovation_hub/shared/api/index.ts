@@ -1,23 +1,18 @@
 export { ideasApi } from './ideas'
-export { projectsApi } from './projects'
+export { communitiesApi } from './communities'
+export { leaderboardApi } from './leaderboard'
+export { impactsApi } from './impacts'
 export { default as client } from './client'
 
 import client from './client'
-import type { ClassroomCourse, Notification, User } from '../types'
+import type { Notification, User } from '../types'
 
 export const authApi = {
   login: (email: string, password: string) =>
     client.post<{ token: string; user: User }>('/sessions', { email, password }),
 
-  persona: (persona: 'employee' | 'admin' | 'sponsor' | 'project_owner') =>
+  persona: (persona: 'employee' | 'manager' | 'admin' | 'sponsor') =>
     client.post<{ token: string; user: User }>('/sessions/persona', { persona }),
-}
-
-export const classroomApi = {
-  list: (params?: { category?: string }) =>
-    client.get<ClassroomCourse[]>('/classroom_courses', { params }),
-
-  get: (id: number) => client.get<ClassroomCourse>(`/classroom_courses/${id}`),
 }
 
 export const notificationsApi = {
@@ -28,5 +23,5 @@ export const notificationsApi = {
 export const summaryApi = {
   get: () => client.get('/summary'),
   trendingIdeas: () => client.get('/summary/trending_ideas'),
-  activeProjects: () => client.get('/summary/active_projects'),
+  topLeaderboard: () => client.get('/summary/leaderboard'),
 }
