@@ -42,9 +42,9 @@ module Api
           User.joins(:ideas)
               .where(ideas: { status: "approved", created_at: start_at.. })
               .group("users.id")
-              .order("COUNT(ideas.id) DESC")
+              .order(Arel.sql("COUNT(ideas.id) DESC"))
               .limit(20)
-              .select("users.*, COUNT(ideas.id) AS score")
+              .select(Arel.sql("users.*, COUNT(ideas.id) AS score"))
               .map.with_index(1) { |u, i| serialize_entry(u, u.score, i) }
         end
 
@@ -53,19 +53,21 @@ module Api
               .where("ideas.author_id = users.id")
               .where(idea_impacts: { created_at: start_at.. })
               .group("users.id")
-              .order("SUM(idea_impacts.people_affected) DESC")
+              .order(Arel.sql("SUM(idea_impacts.people_affected) DESC"))
               .limit(20)
-              .select("users.*, SUM(idea_impacts.people_affected) AS score")
+              .select(Arel.sql("users.*, SUM(idea_impacts.people_affected) AS score"))
               .map.with_index(1) { |u, i| serialize_entry(u, u.score, i) }
         end
 
         def community_catalysts(start_at)
-          User.joins("LEFT JOIN idea_hearts ih ON ih.user_id = users.id AND ih.created_at >= :s", s: start_at)
-              .joins("LEFT JOIN idea_comments ic ON ic.user_id = users.id AND ic.created_at >= :s", s: start_at)
+          # start_at is always server-generated (never user input), safe to interpolate
+          ts = start_at.to_fs(:db)
+          User.joins("LEFT JOIN idea_hearts ih ON ih.user_id = users.id AND ih.created_at >= '#{ts}'")
+              .joins("LEFT JOIN idea_comments ic ON ic.user_id = users.id AND ic.created_at >= '#{ts}'")
               .group("users.id")
-              .order("(COUNT(DISTINCT ih.id) + COUNT(DISTINCT ic.id)) DESC")
+              .order(Arel.sql("(COUNT(DISTINCT ih.id) + COUNT(DISTINCT ic.id)) DESC"))
               .limit(20)
-              .select("users.*, (COUNT(DISTINCT ih.id) + COUNT(DISTINCT ic.id)) AS score")
+              .select(Arel.sql("users.*, (COUNT(DISTINCT ih.id) + COUNT(DISTINCT ic.id)) AS score"))
               .map.with_index(1) { |u, i| serialize_entry(u, u.score, i) }
         end
 
@@ -73,9 +75,9 @@ module Api
           User.joins(:idea_applications)
               .where(idea_applications: { created_at: start_at.. })
               .group("users.id")
-              .order("COUNT(idea_applications.id) DESC")
+              .order(Arel.sql("COUNT(idea_applications.id) DESC"))
               .limit(20)
-              .select("users.*, COUNT(idea_applications.id) AS score")
+              .select(Arel.sql("users.*, COUNT(idea_applications.id) AS score"))
               .map.with_index(1) { |u, i| serialize_entry(u, u.score, i) }
         end
 
@@ -83,9 +85,9 @@ module Api
           User.joins(:innovation_points)
               .where(innovation_points: { earned_at: start_at.. })
               .group("users.id")
-              .order("SUM(innovation_points.points) DESC")
+              .order(Arel.sql("SUM(innovation_points.points) DESC"))
               .limit(20)
-              .select("users.*, SUM(innovation_points.points) AS score")
+              .select(Arel.sql("users.*, SUM(innovation_points.points) AS score"))
               .map.with_index(1) { |u, i| serialize_entry(u, u.score, i) }
         end
       end

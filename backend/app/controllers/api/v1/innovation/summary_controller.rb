@@ -33,7 +33,7 @@ module Api
         def leaderboard_top(category)
           User.joins(:innovation_points)
               .group("users.id")
-              .order("SUM(innovation_points.points) DESC")
+              .order(Arel.sql("SUM(innovation_points.points) DESC"))
               .limit(3)
               .select("users.id, users.name, users.avatar_url, SUM(innovation_points.points) AS score")
               .map { |u| { id: u.id, name: u.name, score: u.score.to_i } }
