@@ -7,6 +7,12 @@ import { IdeaStatusBadge } from '../shared/components/StatusBadge'
 import { HeartButton } from '../shared/components/HeartButton'
 import { useAuth } from '../shared/hooks/useAuth'
 
+const EMPTY_APPLY = {
+  department: '', apply_description: '',
+  people_affected: '', time_saved_hours: '', cost_saved_thb: '',
+  impact_type: 'other' as ImpactType, impact_description: '',
+}
+
 export function IdeaDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -20,11 +26,12 @@ export function IdeaDetailPage() {
   // UI state
   const [commentBody, setCommentBody] = useState('')
   const [showApplyForm, setShowApplyForm] = useState(false)
-  const [applyForm, setApplyForm] = useState({ department: '', description: '' })
   const [showReturnInput, setShowReturnInput] = useState(false)
   const [returnReason, setReturnReason] = useState('')
 
-  // Impact form (shown below an application card)
+  const [applyForm, setApplyForm] = useState(EMPTY_APPLY)
+
+  // Retroactive impact form for existing applications without impact
   const [impactFormFor, setImpactFormFor] = useState<number | null>(null)
   const [impactForm, setImpactForm] = useState({
     people_affected: '', time_saved_hours: '', cost_saved_thb: '',
@@ -110,17 +117,34 @@ export function IdeaDetailPage() {
     }
   }
 
-  /* ── Apply idea ── */
+  /* ── Apply idea + impact in one step ── */
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!applyForm.description.trim()) return
-    const { data } = await impactsApi.createApplication(idea.id, applyForm)
-    setApplications((p) => [data, ...p])
+    if (!applyForm.apply_description.trim()) return
+
+    const { data: app } = await impactsApi.createApplication(idea.id, {
+      department: applyForm.department || undefined,
+      description: applyForm.apply_description,
+    })
+
+    // Create impact immediately together with application
+    const impactPayload = {
+      people_affected: parseInt(applyForm.people_affected) || 0,
+      time_saved_hours: applyForm.time_saved_hours ? parseFloat(applyForm.time_saved_hours) : undefined,
+      cost_saved_thb: applyForm.cost_saved_thb ? parseFloat(applyForm.cost_saved_thb) : undefined,
+      impact_type: applyForm.impact_type,
+      description: applyForm.impact_description,
+    }
+    const { data: impact } = await impactsApi.createImpact(app.id, impactPayload)
+    const appWithImpact = { ...app, impact }
+
+    setApplications((p) => [appWithImpact, ...p])
     setIdea((p) => p ? { ...p, application_count: (p.application_count ?? 0) + 1 } : p)
-    setShowApplyForm(false); setApplyForm({ department: '', description: '' })
+    setShowApplyForm(false)
+    setApplyForm(EMPTY_APPLY)
   }
 
-  /* ── Report impact ── */
+  /* ── Retroactive impact for existing applications ── */
   const handleImpact = async (e: React.FormEvent, appId: number) => {
     e.preventDefault()
     const payload = {
@@ -133,6 +157,7 @@ export function IdeaDetailPage() {
     const { data } = await impactsApi.createImpact(appId, payload)
     setApplications((p) => p.map((a) => a.id === appId ? { ...a, impact: data } : a))
     setImpactFormFor(null)
+    setImpactForm({ people_affected: '', time_saved_hours: '', cost_saved_thb: '', impact_type: 'other', description: '' })
   }
 
   return (
@@ -247,7 +272,9 @@ export function IdeaDetailPage() {
             </div>
 
             {showApplyForm && (
-              <form onSubmit={handleApply} className="space-y-2 border border-[var(--color-border-dashed)] rounded-[var(--radius-input)] p-3">
+              <form onSubmit={handleApply} className="border border-[var(--color-border-dashed)] rounded-[var(--radius-input)] p-3 space-y-3">
+                {/* ── การนำไปใช้ ── */}
+                <p className="text-xs font-semibold text-[var(--color-text-primary)]">การนำไปใช้</p>
                 <input
                   value={applyForm.department}
                   onChange={(e) => setApplyForm({ ...applyForm, department: e.target.value })}
@@ -255,14 +282,64 @@ export function IdeaDetailPage() {
                   className="w-full border border-[var(--color-border-input)] rounded-[var(--radius-input)] px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
                 />
                 <textarea
-                  required
-                  rows={2}
-                  value={applyForm.description}
-                  onChange={(e) => setApplyForm({ ...applyForm, description: e.target.value })}
-                  placeholder="อธิบายว่านำไปใช้อย่างไร *"
+                  required rows={2}
+                  value={applyForm.apply_description}
+                  onChange={(e) => setApplyForm({ ...applyForm, apply_description: e.target.value })}
+                  placeholder="นำไปใช้อย่างไร เช่น นำ e-Form มาแทนกระดาษที่สาขา *"
                   className="w-full border border-[var(--color-border-input)] rounded-[var(--radius-input)] px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)] resize-none"
                 />
-                <button type="submit" className="w-full bg-[var(--color-primary)] text-white text-sm font-medium py-2 rounded-[var(--radius-button)]">บันทึก</button>
+
+                {/* ── ผลลัพธ์ที่เกิดขึ้น ── */}
+                <p className="text-xs font-semibold text-[var(--color-text-primary)] pt-1 border-t border-[var(--color-border)]">ผลลัพธ์ที่เกิดขึ้น</p>
+                <div className="space-y-2">
+                  <input
+                    required type="number" min="0"
+                    value={applyForm.people_affected}
+                    onChange={(e) => setApplyForm({ ...applyForm, people_affected: e.target.value })}
+                    placeholder="จำนวนคนที่ได้รับผลกระทบ *"
+                    className="w-full border border-[var(--color-border-input)] rounded-[var(--radius-input)] px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="number" min="0" step="0.5"
+                      value={applyForm.time_saved_hours}
+                      onChange={(e) => setApplyForm({ ...applyForm, time_saved_hours: e.target.value })}
+                      placeholder="เวลาที่ประหยัด (ชม.)"
+                      className="border border-[var(--color-border-input)] rounded-[var(--radius-input)] px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
+                    />
+                    <input
+                      type="number" min="0"
+                      value={applyForm.cost_saved_thb}
+                      onChange={(e) => setApplyForm({ ...applyForm, cost_saved_thb: e.target.value })}
+                      placeholder="ประหยัดงบ (บาท)"
+                      className="border border-[var(--color-border-input)] rounded-[var(--radius-input)] px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
+                    />
+                  </div>
+                  <select
+                    value={applyForm.impact_type}
+                    onChange={(e) => setApplyForm({ ...applyForm, impact_type: e.target.value as ImpactType })}
+                    className="w-full border border-[var(--color-border-input)] rounded-[var(--radius-input)] px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)] bg-white"
+                  >
+                    <option value="time">ประหยัดเวลา</option>
+                    <option value="cost">ประหยัดต้นทุน</option>
+                    <option value="people">กระทบคนจำนวนมาก</option>
+                    <option value="process">ปรับปรุงกระบวนการ</option>
+                    <option value="other">อื่นๆ</option>
+                  </select>
+                  <textarea
+                    required rows={2}
+                    value={applyForm.impact_description}
+                    onChange={(e) => setApplyForm({ ...applyForm, impact_description: e.target.value })}
+                    placeholder="อธิบายผลลัพธ์ที่เกิดขึ้นโดยละเอียด *"
+                    className="w-full border border-[var(--color-border-input)] rounded-[var(--radius-input)] px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)] resize-none"
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <button type="submit" className="flex-1 bg-[var(--color-primary)] text-white text-sm font-medium py-2 rounded-[var(--radius-button)]">บันทึก</button>
+                  <button type="button" onClick={() => { setShowApplyForm(false); setApplyForm(EMPTY_APPLY) }}
+                    className="flex-1 border border-[var(--color-border-input)] text-sm py-2 rounded-[var(--radius-button)]">ยกเลิก</button>
+                </div>
               </form>
             )}
 
