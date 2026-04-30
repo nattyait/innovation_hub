@@ -4,6 +4,7 @@ import { useAuth } from './shared/hooks/useAuth'
 const BASE_NAV = [
   { to: '/innovation/ideas',       label: 'ไอเดีย', icon: '💡' },
   { to: '/innovation/community',   label: 'ชุมชน',  icon: '🤝' },
+  { to: '/innovation/projects',    label: 'โปรเจค', icon: '🚀' },
   { to: '/innovation/leaderboard', label: 'อันดับ', icon: '🏆' },
 ]
 

@@ -40,6 +40,27 @@ Rails.application.routes.draw do
 
         get  "leaderboard", to: "leaderboard#index"
 
+        # Innovation Projects
+        get  "sponsor/dashboard", to: "innovation_projects#sponsor_dashboard"
+        resources :innovation_projects, only: [:index, :show, :create, :update] do
+          member do
+            post :add_member
+            delete "members/:user_id", to: "innovation_projects#remove_member", as: :remove_member
+          end
+          resources :topics, only: [:index, :show, :create],
+                             controller: :project_topics do
+            resources :comments, only: [:create],
+                                 controller: :project_topic_comments
+          end
+          resources :deployments, only: [:index, :create],
+                                  controller: :project_deployments
+        end
+        patch "project_deployments/:id", to: "project_deployments#update"
+        resources :project_deployments, only: [] do
+          resource :impact, only: [:create, :update],
+                            controller: :project_deployment_impacts
+        end
+
         resources :notifications, only: [:index] do
           collection { patch :mark_read }
         end

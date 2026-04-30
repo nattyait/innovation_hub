@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_30_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_30_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -143,6 +143,38 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_30_000001) do
     t.index ["user_id"], name: "index_innovation_points_on_user_id"
   end
 
+  create_table "innovation_project_members", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "innovation_project_id", null: false
+    t.string "role", default: "member", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["innovation_project_id", "user_id"], name: "idx_project_members_uniq", unique: true
+    t.index ["innovation_project_id"], name: "index_innovation_project_members_on_innovation_project_id"
+    t.index ["user_id"], name: "index_innovation_project_members_on_user_id"
+  end
+
+  create_table "innovation_projects", force: :cascade do |t|
+    t.text "ai_usage"
+    t.datetime "created_at", null: false
+    t.string "department"
+    t.text "esg_impact"
+    t.text "expectation"
+    t.bigint "idea_id", null: false
+    t.text "improved_process"
+    t.text "pain_point"
+    t.text "qualitative_results"
+    t.text "quantitative_results"
+    t.bigint "sponsor_id", null: false
+    t.string "status", default: "planning", null: false
+    t.text "summary"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["idea_id"], name: "index_innovation_projects_on_idea_id"
+    t.index ["sponsor_id"], name: "index_innovation_projects_on_sponsor_id"
+    t.index ["status"], name: "index_innovation_projects_on_status"
+  end
+
   create_table "notifications", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "kind", null: false
@@ -154,6 +186,53 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_30_000001) do
     t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable_type_and_notifiable_id"
     t.index ["user_id", "read_at"], name: "index_notifications_on_user_id_and_read_at"
     t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
+  create_table "project_deployment_impacts", force: :cascade do |t|
+    t.decimal "cost_saved_thb", precision: 14, scale: 2
+    t.datetime "created_at", null: false
+    t.text "description", null: false
+    t.string "evidence_url"
+    t.string "impact_type", default: "other", null: false
+    t.integer "people_affected", default: 0, null: false
+    t.bigint "project_deployment_id", null: false
+    t.bigint "reported_by_user_id", null: false
+    t.decimal "time_saved_hours", precision: 8, scale: 2
+    t.datetime "updated_at", null: false
+    t.index ["project_deployment_id"], name: "index_project_deployment_impacts_on_project_deployment_id"
+  end
+
+  create_table "project_deployments", force: :cascade do |t|
+    t.bigint "assigned_by_id", null: false
+    t.datetime "created_at", null: false
+    t.string "department_name", null: false
+    t.date "end_date"
+    t.bigint "innovation_project_id", null: false
+    t.date "start_date"
+    t.string "status", default: "not_started", null: false
+    t.datetime "updated_at", null: false
+    t.index ["innovation_project_id"], name: "index_project_deployments_on_innovation_project_id"
+  end
+
+  create_table "project_topic_comments", force: :cascade do |t|
+    t.bigint "author_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.bigint "parent_id"
+    t.bigint "project_topic_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["parent_id"], name: "index_project_topic_comments_on_parent_id"
+    t.index ["project_topic_id"], name: "index_project_topic_comments_on_project_topic_id"
+  end
+
+  create_table "project_topics", force: :cascade do |t|
+    t.bigint "author_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.bigint "innovation_project_id", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["innovation_project_id"], name: "index_project_topics_on_innovation_project_id"
   end
 
   create_table "user_badges", force: :cascade do |t|
@@ -197,7 +276,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_30_000001) do
   add_foreign_key "ideas", "users", column: "approver_id"
   add_foreign_key "ideas", "users", column: "author_id"
   add_foreign_key "innovation_points", "users"
+  add_foreign_key "innovation_project_members", "innovation_projects"
+  add_foreign_key "innovation_project_members", "users"
+  add_foreign_key "innovation_projects", "ideas"
+  add_foreign_key "innovation_projects", "users", column: "sponsor_id"
   add_foreign_key "notifications", "users"
+  add_foreign_key "project_deployment_impacts", "project_deployments"
+  add_foreign_key "project_deployment_impacts", "users", column: "reported_by_user_id"
+  add_foreign_key "project_deployments", "innovation_projects"
+  add_foreign_key "project_deployments", "users", column: "assigned_by_id"
+  add_foreign_key "project_topic_comments", "project_topic_comments", column: "parent_id"
+  add_foreign_key "project_topic_comments", "project_topics"
+  add_foreign_key "project_topic_comments", "users", column: "author_id"
+  add_foreign_key "project_topics", "innovation_projects"
+  add_foreign_key "project_topics", "users", column: "author_id"
   add_foreign_key "user_badges", "users"
   add_foreign_key "users", "users", column: "manager_id"
 end

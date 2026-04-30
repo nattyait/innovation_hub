@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ideasApi, impactsApi } from '../shared/api'
+import { ideasApi, impactsApi, projectsApi } from '../shared/api'
 import type { Idea, IdeaComment, IdeaApplication, ImpactType } from '../shared/types'
 import { PageHeader } from '../shared/components/PageHeader'
 import { IdeaStatusBadge } from '../shared/components/StatusBadge'
@@ -59,6 +59,12 @@ export function IdeaDetailPage() {
   const canSubmit   = isAuthor && ['draft', 'returned'].includes(idea.status)
   const canRetract  = isAuthor && idea.status === 'submitted'
   const canApprove  = isApprover && ['submitted', 'under_review'].includes(idea.status)
+  const canCreateProject = user?.role === 'sponsor' && idea.status === 'approved'
+
+  const handleCreateProject = async () => {
+    const { data } = await projectsApi.create({ idea_id: idea.id, title: idea.title })
+    navigate(`/innovation/projects/${data.id}`)
+  }
 
   /* ── Heart ── */
   const handleHeart = async () => {
@@ -231,6 +237,14 @@ export function IdeaDetailPage() {
           </div>
           {idea.status === 'approved' && !idea.hearted && remainingHearts === 0 && (
             <p className="mt-1 text-xs text-orange-500 text-right">หัวใจหมดแล้วในรอบนี้</p>
+          )}
+          {canCreateProject && (
+            <div className="mt-3 pt-3 border-t border-[var(--color-border)]">
+              <button onClick={handleCreateProject}
+                className="w-full bg-[var(--color-primary)] text-white text-sm font-medium py-2.5 rounded-[var(--radius-button)] shadow-btn">
+                🚀 สร้าง Innovation Project จากไอเดียนี้
+              </button>
+            </div>
           )}
         </div>
 

@@ -1,12 +1,17 @@
 class PointsService
   POINT_VALUES = {
-    idea_submitted:          5,
-    idea_approved:          20,
-    idea_applied_by_others: 30,
-    heart_received:          2,
-    comment_upvoted:         3,
-    impact_reported:        15,
-    first_adopter_bonus:    10
+    idea_submitted:           5,
+    idea_approved:           20,
+    idea_applied_by_others:  30,
+    heart_received:           2,
+    comment_upvoted:          3,
+    impact_reported:         15,
+    first_adopter_bonus:     10,
+    project_topic_created:    5,
+    project_comment_added:    3,
+    project_reply_added:      2,
+    deployment_adopted:      15,
+    deployment_impact_reported: 20
   }.freeze
 
   def self.award(user, action, reference: nil)

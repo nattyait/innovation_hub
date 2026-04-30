@@ -92,6 +92,107 @@ export interface LeaderboardEntry {
   badges: BadgeKey[]
 }
 
+export type ProjectStatus = 'planning' | 'active' | 'completed' | 'on_hold'
+export type DeploymentStatus = 'not_started' | 'adopted' | 'adapted' | 'not_adopted'
+
+export interface InnovationProject {
+  id: number
+  title: string
+  department: string | null
+  status: ProjectStatus
+  summary: string | null
+  expectation: string | null
+  pain_point: string | null
+  improved_process: string | null
+  ai_usage: string | null
+  quantitative_results: string | null
+  qualitative_results: string | null
+  esg_impact: string | null
+  idea: { id: number; title: string }
+  sponsor: { id: number; name: string; avatar_url: string | null }
+  members: ProjectMember[]
+  created_at: string
+  updated_at: string
+}
+
+export interface InnovationProjectSummary {
+  id: number
+  title: string
+  department: string | null
+  status: ProjectStatus
+  summary: string | null
+  idea: { id: number; title: string }
+  sponsor: { id: number; name: string }
+  member_count: number
+  deployment_count: number
+  created_at: string
+}
+
+export interface ProjectMember {
+  id: number
+  role: string
+  user: { id: number; name: string; avatar_url: string | null }
+}
+
+export interface ProjectTopic {
+  id: number
+  title: string
+  comment_count: number
+  author: { id: number; name: string; avatar_url: string | null }
+  created_at: string
+}
+
+export interface ProjectTopicDetail extends ProjectTopic {
+  body: string
+  comments: ProjectTopicComment[]
+}
+
+export interface ProjectTopicComment {
+  id: number
+  body: string
+  parent_id: number | null
+  author: { id: number; name: string; avatar_url: string | null }
+  created_at: string
+  replies: ProjectTopicComment[]
+}
+
+export interface ProjectDeployment {
+  id: number
+  department_name: string
+  status: DeploymentStatus
+  start_date: string | null
+  end_date: string | null
+  overdue: boolean
+  assigned_by: { id: number; name: string }
+  impact: ProjectDeploymentImpact | null
+}
+
+export interface ProjectDeploymentImpact {
+  id: number
+  people_affected: number
+  time_saved_hours: number | null
+  cost_saved_thb: number | null
+  impact_type: ImpactType
+  description: string
+  reported_by: { id: number; name: string }
+}
+
+export interface SponsorDashboardProject {
+  id: number
+  title: string
+  status: ProjectStatus
+  idea: { id: number; title: string }
+  deployments: {
+    id: number
+    department_name: string
+    status: DeploymentStatus
+    start_date: string | null
+    end_date: string | null
+    overdue: boolean
+    has_impact: boolean
+  }[]
+}
+
 export interface Notification {
   id: number
   kind:

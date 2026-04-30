@@ -16,9 +16,12 @@ class User < ApplicationRecord
   has_many :heart_budgets,      dependent: :destroy
   has_many :idea_applications,  foreign_key: :applied_by_user_id, dependent: :destroy
   has_many :idea_impacts,       foreign_key: :reported_by_user_id, dependent: :destroy
-  has_many :innovation_points,  dependent: :destroy
-  has_many :user_badges,        dependent: :destroy
-  has_many :notifications,      dependent: :destroy
+  has_many :innovation_points,        dependent: :destroy
+  has_many :user_badges,              dependent: :destroy
+  has_many :notifications,            dependent: :destroy
+  has_many :sponsored_projects,       class_name: "InnovationProject", foreign_key: :sponsor_id, dependent: :nullify
+  has_many :innovation_project_members, dependent: :destroy
+  has_many :joined_projects,          through: :innovation_project_members, source: :innovation_project
 
   validates :name,  presence: true
   validates :email, presence: true, uniqueness: { case_sensitive: false },

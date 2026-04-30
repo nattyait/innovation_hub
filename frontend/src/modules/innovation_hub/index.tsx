@@ -7,6 +7,8 @@ import { IdeaFormPage } from './InnovationIdeas/IdeaFormPage'
 import { CommunityPage } from './Community/CommunityPage'
 import { LeaderboardPage } from './Leaderboard/LeaderboardPage'
 import { AdminIdeasPage } from './Admin/AdminIdeasPage'
+import { ProjectListPage } from './InnovationProjects/ProjectListPage'
+import { ProjectDetailPage } from './InnovationProjects/ProjectDetailPage'
 import { useAuth } from './shared/hooks/useAuth'
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -39,9 +41,11 @@ export function InnovationHubModule() {
                 <Route path="ideas/new"      element={<IdeaFormPage />} />
                 <Route path="ideas/:id"      element={<IdeaDetailPage />} />
                 <Route path="ideas/:id/edit" element={<IdeaFormPage />} />
-                <Route path="community"      element={<CommunityPage />} />
-                <Route path="leaderboard"    element={<LeaderboardPage />} />
-                <Route path="admin"          element={<AdminIdeasPage />} />
+                <Route path="community"         element={<CommunityPage />} />
+                <Route path="leaderboard"      element={<LeaderboardPage />} />
+                <Route path="projects"         element={<ProjectListPage />} />
+                <Route path="projects/:id"     element={<ProjectDetailPage />} />
+                <Route path="admin"            element={<AdminIdeasPage />} />
               </Routes>
             </Layout>
           </AuthGuard>

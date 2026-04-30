@@ -18,5 +18,5 @@ export const impactsApi = {
       description: string
       evidence_url?: string
     }
-  ) => client.post<IdeaImpact>(`/applications/${applicationId}/impact`, data),
+  ) => client.post<IdeaImpact>(`/idea_applications/${applicationId}/impact`, data),
 }

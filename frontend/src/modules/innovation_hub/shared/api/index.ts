@@ -1,4 +1,5 @@
 export { ideasApi } from './ideas'
+export { projectsApi } from './projects'
 export { communitiesApi } from './communities'
 export { leaderboardApi } from './leaderboard'
 export { impactsApi } from './impacts'
